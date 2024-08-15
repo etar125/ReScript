@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.35026.233
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rescript", "rescript\rescript.csproj", "{90C3DA0D-0E7A-479D-B271-D62591C16A51}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{90C3DA0D-0E7A-479D-B271-D62591C16A51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90C3DA0D-0E7A-479D-B271-D62591C16A51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90C3DA0D-0E7A-479D-B271-D62591C16A51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90C3DA0D-0E7A-479D-B271-D62591C16A51}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E03E1873-3944-46E4-B496-A74F8699AD2B}
+	EndGlobalSection
+EndGlobal
