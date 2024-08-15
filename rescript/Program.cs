@@ -1,4 +1,4 @@
-﻿// Created by TheProject
+﻿// by etar125
 using System;
 using System.IO;
 using System.Threading;
@@ -15,12 +15,10 @@ using System.Net;
 using System.Windows.Forms;
 using System.Drawing;
 
-namespace rescript
-{
-    public class Program
-    {
-        public static string path;
-        public static List<string> vars;
+namespace rescript {
+    public class Program {
+        public static string path = "index.aus";
+        public static Dictionary<string, string> vars;
         public static bool logs;
         public static string logf;
         public static Form msgbox = new Form();
@@ -32,33 +30,13 @@ namespace rescript
         public static string chvar;
         public static ListBox lb = new ListBox();
 
-        [DllImport("user32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool SetWindowPos(
-            IntPtr hWnd,
-            IntPtr hWndInsertAfter,
-            int x,
-            int y,
-            int cx,
-            int cy,
-            int uFlags);
 
-        private const int HWND_TOPMOST = -1;
-        private const int SWP_NOMOVE = 0x0002;
-        private const int SWP_NOSIZE = 0x0001;
-
-        [DllImport("Shell32.dll")]
-        private static extern int SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);
-
-        private const int SHCNE_ASSOCCHANGED = 0x8000000;
-        private const int SHCNF_FLUSH = 0x1000;
         [DllImport("Wininet.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool InternetGetConnectedState(out INET_CONNECTION_STATE lpdwFlags, uint dwReserved);
 
         [Flags]
-        enum INET_CONNECTION_STATE : uint
-        {
+        enum INET_CONNECTION_STATE : uint {
             INTERNET_CONNECTION_CONFIGURED = 0x40,
             INTERNET_CONNECTION_LAN = 0x02,
             INTERNET_CONNECTION_MODEM = 0x01,
@@ -67,58 +45,55 @@ namespace rescript
             INTERNET_CONNECTION_PROXY = 0x04,
             INTERNET_RAS_INSTALLED = 0x10
         }
-        public static void Main(string[] args)
-        {
-            // Лист для переменных
-            vars = new List<string>
-            {
-                "datetime=" + DateTime.Now,
-                "curdir=" + Environment.CurrentDirectory,
-                "sysdir=" + Environment.SystemDirectory,
-                "time1=" + DateTime.Now.ToString("HH:mm:ss"),
-                "time2=" + DateTime.Now.ToString("HH:mm"),
-                "date1=" + DateTime.Now.ToString("dd MMMM yyyy"),
-                "date2=" + DateTime.Now.ToString("dd.MM.yyyy"),
-                "auver=3.0r",
-                "machinename=" + Environment.MachineName,
-                "username=" + Environment.UserName,
-                "osver=" + Environment.OSVersion
+        public static void Main(string[] args) {
+            // Основные переменные
+            vars = new Dictionary<string, string> {
+                { "datetime", DateTime.Now.ToString() },
+                { "curdir", Environment.CurrentDirectory },
+                { "sysdir", Environment.SystemDirectory },
+                { "time1", DateTime.Now.ToString("HH:mm:ss") },
+                { "time2", DateTime.Now.ToString("HH:mm") },
+                { "date1", DateTime.Now.ToString("dd MMMM yyyy") },
+                { "date2", DateTime.Now.ToString("dd.MM.yyyy") },
+                { "auver", "3.0r" },
+                { "machinename", Environment.MachineName },
+                { "username", Environment.UserName },
+                { "osver", Environment.OSVersion.VersionString }
             };
 
             // Проверка на наличие аргументов и установка значения переменной path
             bool have = false;
-            foreach (string l in args)
-            {
+            foreach (string l in args) {
                 string s = l;
-                if (!have)
-                {
-                    if (s.StartsWith("file:"))
-                    {
+                if (!have) {
+                    if (s.StartsWith("file:")) {
                         s = s.Remove(0, 5);
-                        if (File.Exists(s))
-                        {
+                        if (File.Exists(s)) {
                             path = s;
                             have = true;
-                        }
-                        else
-                        {
+                        } else {
                             Console.WriteLine("Not found file " + s);
-                            Console.ReadKey();
-                            Environment.Exit(0);
                         }
                         break;
-                    }
-                    else if (s == "version")
-                    {
-                        Console.WriteLine("AuScript 3.0r by ix4Software");
+                    } else if (s == "version") {
+                        Console.WriteLine("AuScript 3.0r by ix4Software | ReScript by etar125");
                         Console.ReadKey();
                         Environment.Exit(0);
+                    } else {
+                        if (File.Exists(s)) {
+                            path = s;
+                            have = true;
+                        } else {
+                            Console.WriteLine("Not found file " + s);
+                        }
+                        /*Console.WriteLine("Wrong argument " + s);
+                        Console.ReadKey();
+                        Environment.Exit(0);*/
                     }
-                    else if (s.StartsWith("teh:"))
-                    {
+                    /*else if (s.StartsWith("teh:")) {
                         s = s.Remove(0, 4);
                         string[] splitstrings = { ":", "::" };
-                        string[] re = s.Split(splitstrings, StringSplitOptions.None);
+                        stwring[] re = s.Split(splitstrings, StringSplitOptions.None);
                         Process p = new Process();
                         p.StartInfo.FileName = re[0];
                         p.StartInfo.CreateNoWindow = true;
@@ -128,34 +103,20 @@ namespace rescript
                         p.Start();
                         Thread.Sleep(500);
                         Environment.Exit(0);
-                    }
-                    else if (s == "topmost")
-                    {
+                    } else if (s == "topmost") {
                         IntPtr hWnd = Process.GetCurrentProcess().MainWindowHandle;
                         SetWindowPos(hWnd,
                             new IntPtr(HWND_TOPMOST),
                             0, 0, 0, 0,
                             SWP_NOMOVE | SWP_NOSIZE);
-                    }
+                    }*/
                     //EnsureAssociationsSet()
-                    else
-                    {
-                        Console.WriteLine("Wrong argument " + s);
-                        Console.ReadKey();
-                        Environment.Exit(0);
-                    }
                 }
             }
-            if (!have)
-            {
-                if (File.Exists("index.aus"))
-                    path = "index.aus";
-                else
-                {
-                    Console.WriteLine("Not found index.aus");
-                    Console.ReadKey();
-                    Environment.Exit(0);
-                }
+            if (!File.Exists(path)) {
+                Console.WriteLine("Not found " + path);
+                Console.ReadKey();
+                Environment.Exit(0);
             }
 
             //other
@@ -171,738 +132,121 @@ namespace rescript
         //Version: 0.3.7 (16.07.2022 20:49)
         //Version: 0.4.1 (23.07.2022 19:33)
 
-        [STAThread]
+        public static string ConvertS(string src) {
+            string[] ofas2 = src.Split(new string[] { "&&&", "&^&" }, StringSplitOptions.None);
+            string result = "";
+            for (int s = 0; s < ofas2.Length; s++) {
+                string ofas = ofas2[s];
+                if (ofas.StartsWith("$")) {
+                    ofas = ofas.Remove(0, 1);
+                    if (vars.ContainsKey(ofas)) result += vars[ofas];
+                    else {
+                        result += "null";
+                        if (logs == true) {
+                            string text = "Not found variable " + ofas + "\n";
+                            File.AppendAllText(logf, text);
+                        }
+                    }
+                } else if (ofas.StartsWith("/$")) {
+                    string tit = ofas.Remove(0, 1);
+                    result += tit;
+                } else result += ofas;
+            }
+            return result;
+        } public static string ConvertN(string src) {
+            if (src.StartsWith("$")) {
+                string ofas = src.Remove(0, 1);
+                if (vars.ContainsKey(ofas)) return vars[ofas];
+                else {
+                    if (logs == true) {
+                        string text = "Not found variable " + ofas + "\n";
+                        File.AppendAllText(logf, text);
+                    }
+                    return "-0";
+                }
+            } return src;
+        }
+        
         public static void oth(int stat)
         {
             string[] l = File.ReadAllLines(path);
-            for (int i = stat; i < l.Length; i++)
-            {
-                try
-                {
-                    if (l[i].Substring(0, 1) != "_")
-                    {
-                        l[i] = l[i].Substring(0, 1).ToUpper() + l[i].Substring(1, l[i].Length - 1);
-                    }
-                    if (l[i].Substring(0, 1) == "_")
-                    {
-                        l[i] = l[i].Substring(1, 2).ToUpper() + l[i].Substring(2, l[i].Length - 2);
-                    }
-                    if (l[i].StartsWith("Printline "))
-                    {
-                        string ofas3 = l[i].Remove(0, 10);
-                        string[] splitstring = { "&&&", "&^&" };
-                        string[] ofas2 = ofas3.Split(splitstring, StringSplitOptions.None);
-                        string result = "";
-                        for (int s = 0; s < ofas2.Length; s++)
-                        {
-                            string ofas = ofas2[s];
-                            if (ofas.StartsWith("$"))
-                            {
-                                ofas = ofas.Remove(0, 1);
-                                bool ab = false;
-                                for (int ch = 0; ch < vars.Count; ch++)
-                                {
-                                    if (vars[ch].StartsWith(ofas + "="))
-                                    {
-                                        string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                        result += txt2;
-                                        ab = true;
-                                        break;
-                                    }
-                                }
-                                if (ab == false)
-                                {
-                                    result += "null";
-                                    if (logs == true)
-                                    {
-                                        string text = File.ReadAllText(logf);
-                                        text += "Not found variable " + ofas + "|";
-                                        File.WriteAllText(logf, text);
-                                    }
-                                }
-                            }
-                            else if (ofas.StartsWith("/$"))
-                            {
-                                string tit = ofas.Remove(0, 1);
-                                result += tit;
-                            }
-                            else
-                            {
-                                result += ofas;
-                            }
-                        }
-                        Console.WriteLine(result);
-                    }
-                    else if (l[i].StartsWith("Print "))
-                    {
-                        string ofas3 = l[i].Remove(0, 10);
-                        string[] splitstring = { "&&&", "&^&" };
-                        string[] ofas2 = ofas3.Split(splitstring, StringSplitOptions.None);
-                        string result = "";
-                        for (int s = 0; s < ofas2.Length; s++)
-                        {
-                            string ofas = ofas2[s];
-                            if (ofas.StartsWith("$"))
-                            {
-                                ofas = ofas.Remove(0, 1);
-                                bool ab = false;
-                                for (int ch = 0; ch < vars.Count; ch++)
-                                {
-                                    if (vars[ch].StartsWith(ofas + "="))
-                                    {
-                                        string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                        result += txt2;
-                                        ab = true;
-                                        break;
-                                    }
-                                }
-                                if (ab == false)
-                                {
-                                    result += "null";
-                                    if (logs == true)
-                                    {
-                                        string text = File.ReadAllText(logf);
-                                        text += "Not found variable " + ofas + "|";
-                                        File.WriteAllText(logf, text);
-                                    }
-                                }
-                            }
-                            else if (ofas.StartsWith("/$"))
-                            {
-                                string tit = ofas.Remove(0, 1);
-                                result += tit;
-                            }
-                            else
-                            {
-                                result += ofas;
-                            }
-                        }
-                        Console.Write(result);
-                    }
-                    else if (l[i].StartsWith("Caption "))
-                    {
-                        string ofas3 = l[i].Remove(0, 8);
-                        string[] splitstring = { "&&&", "&^&" };
-                        string[] ofas2 = ofas3.Split(splitstring, StringSplitOptions.None);
-                        string result = "";
-                        for (int s = 0; s < ofas2.Length; s++)
-                        {
-                            string ofas = ofas2[s];
-                            if (ofas.StartsWith("$"))
-                            {
-                                ofas = ofas.Remove(0, 1);
-                                bool ab = false;
-                                for (int ch = 0; ch < vars.Count; ch++)
-                                {
-                                    if (vars[ch].StartsWith(ofas + "="))
-                                    {
-                                        string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                        result += txt2;
-                                        ab = true;
-                                        break;
-                                    }
-                                }
-                                if (ab == false)
-                                {
-                                    result += "null";
-                                    if (logs == true)
-                                    {
-                                        string text = File.ReadAllText(logf);
-                                        text += "Not found variable " + ofas + "|";
-                                        File.WriteAllText(logf, text);
-                                    }
-                                }
-                            }
-                            else if (ofas.StartsWith("/$"))
-                            {
-                                string tit = ofas.Remove(0, 1);
-                                result += tit;
-                            }
-                            else
-                            {
-                                result += ofas;
-                            }
-                        }
-                        Console.Title = result;
-                    }
-                    else if (l[i].StartsWith("Variable "))
-                    {
+            for (int i = stat; i < l.Length; i++) {
+                try {
+                    if (l[i].Substring(0, 1) != "_") l[i] = l[i].Substring(0, 1).ToUpper() + l[i].Substring(1);
+                    else l[i] = l[i].Substring(1, 1).ToUpper() + l[i].Substring(2);
+                    if (l[i].StartsWith("Printline ")) Console.WriteLine(ConvertS(l[i].Remove(0, 10)));
+                    else if (l[i].StartsWith("Print ")) Console.Write(ConvertS(l[i].Remove(0, 6)));
+                    else if (l[i].StartsWith("Caption ")) Console.Title = ConvertS(l[i].Remove(0, 8));
+                    else if (l[i].StartsWith("Variable ")) {
                         string ofas3 = l[i].Remove(0, 9);
                         string varvf = ofas3.Substring(0, ofas3.IndexOf("="));
                         string valuef = ofas3.Substring(ofas3.IndexOf("=") + 1);
-                        string[] splitstring = { "&&&", "&^&" };
-                        string[] ofas2 = valuef.Split(splitstring, StringSplitOptions.None);
-                        string result = "";
-                        for (int s = 0; s < ofas2.Length; s++)
-                        {
-                            string ofas = ofas2[s];
-                            if (ofas.StartsWith("$"))
-                            {
-                                ofas = ofas.Remove(0, 1);
-                                bool ab = false;
-                                for (int ch = 0; ch < vars.Count; ch++)
-                                {
-                                    if (vars[ch].StartsWith(ofas + "="))
-                                    {
-                                        string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                        result += txt2;
-                                        ab = true;
-                                        break;
-                                    }
-                                }
-                                if (ab == false)
-                                {
-                                    result += "null";
-                                    if (logs == true)
-                                    {
-                                        string text = File.ReadAllText(logf);
-                                        text += "Not found variable " + ofas + "|";
-                                        File.WriteAllText(logf, text);
-                                    }
-                                }
-                            }
-                            else if (ofas.StartsWith("/$"))
-                            {
-                                string tit = ofas.Remove(0, 1);
-                                result += tit;
-                            }
-                            else
-                            {
-                                result += ofas;
-                            }
-                        }
-                        string va = result;
-                        bool d = false;
-                        for (int ch = 0; ch < vars.Count; ch++)
-                        {
-                            if (vars[ch].StartsWith(varvf + "="))
-                            {
-                                vars[ch] = varvf + "=" + va;
-                                d = true;
-                                break;
-                            }
-                        }
-                        if (!d)
-                        {
-                            vars.Add(varvf + "=" + va);
-                        }
-                    }
-                    else if (l[i].StartsWith("Mathp "))
-                    {
-                        string ofas = l[i].Remove(0, 6);
-                        string one = ofas.Substring(0, ofas.IndexOf("+"));
+                        string va = ConvertS(valuef);
+                        if (vars.ContainsKey(varvf)) vars[varvf] = valuef;
+                        else vars.Add(varvf, valuef);
+                    } else if (l[i].StartsWith("Math")) {
+                        string ofas = l[i].Remove(0, 4);
+                        string op = ofas.Substring(0, 1);
+                        ofas = ofas.Remove(0, 1);
+                        string one = ofas.Substring(0, ofas.IndexOf(" "));
                         string tam = ofas.Remove(0, one.Length + 1);
                         string two = tam.Substring(0, tam.IndexOf("="));
                         string varv = ofas.Substring(ofas.IndexOf("=") + 1);
-                        if (one.StartsWith("$"))
-                        {
-                            one = one.Remove(0, 1);
-                            bool ab = false;
-                            for (int ch = 0; ch < vars.Count; ch++)
-                            {
-                                if (vars[ch].StartsWith(one + "="))
-                                {
-                                    string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                    one = txt2;
-                                    ab = true;
-                                    break;
-                                }
-                            }
-                            if (ab == false)
-                            {
-                                one = "0";
-                                if (logs == true)
-                                {
-                                    string text = File.ReadAllText(logf);
-                                    text += "Not found variable " + one + "|";
-                                    File.WriteAllText(logf, text);
-                                }
-                            }
-                        }
-                        if (two.StartsWith("$"))
-                        {
-                            two = two.Remove(0, 1);
-                            bool ab = false;
-                            for (int ch = 0; ch < vars.Count; ch++)
-                            {
-                                if (vars[ch].StartsWith(two + "="))
-                                {
-                                    string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                    two = txt2;
-                                    ab = true;
-                                    break;
-                                }
-                            }
-                            if (ab == false)
-                            {
-                                two = "0";
-                                if (logs == true)
-                                {
-                                    string text = File.ReadAllText(logf);
-                                    text += "Not found variable " + two + "|";
-                                    File.WriteAllText(logf, text);
-                                }
-                            }
-                        }
-                        try
-                        {
+                        one = ConvertN(one);
+                        two = ConvertN(two);
+                        try {
                             double a = double.Parse(one); double b = double.Parse(two);
-                            double result = a + b;
-                            bool d = false;
-                            for (int ch = 0; ch < vars.Count; ch++)
-                            {
-                                if (vars[ch].StartsWith(varv + "="))
-                                {
-                                    vars[ch] = varv + "=" + result;
-                                    d = true;
-                                    break;
-                                }
-
-                            }
-                            if (!d)
-                            {
-                                vars.Add(varv + "=" + result);
+                            double result = 0;
+                            if (op == "p") result = a + b;
+                            else if (op == "m") result = a - b;
+                            else if (op == "x") result = a * b;
+                            else if (op == "n") result = a / b;
+                            else if (op == "o") result = a % b;
+                            if (vars.ContainsKey(varv)) vars[varv] = result.ToString();
+                            else vars.Add(varv, result.ToString());
+                        } catch {
+                            if (logs == true) {
+                                string text = "Unkown error: " + ofas + " *Check variables, arguments\n";
+                                File.AppendAllText(logf, text);
                             }
                         }
-                        catch
-                        {
-                            if (logs == true)
-                            {
-                                string text = File.ReadAllText(logf);
-                                text += "Unkown error: " + ofas + " *Check variables, arguments|";
-                                File.WriteAllText(logf, text);
-                            }
-                        }
-                    }
-                    else if (l[i].StartsWith("Mathm "))
-                    {
-                        string ofas = l[i].Remove(0, 6);
-                        string one = ofas.Substring(0, ofas.IndexOf("-"));
-                        string tam = ofas.Remove(0, one.Length + 1);
-                        string two = tam.Substring(0, tam.IndexOf("="));
-                        string varv = ofas.Substring(ofas.IndexOf("=") + 1);
-                        if (one.StartsWith("$"))
-                        {
-                            one = one.Remove(0, 1);
-                            bool ab;
-                            ab = false;
-                            for (int ch = 0; ch < vars.Count; ch++)
-                            {
-                                if (vars[ch].StartsWith(one + "="))
-                                {
-                                    string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                    one = txt2;
-                                    ab = true;
-                                    break;
-                                }
-                            }
-                            if (ab == false)
-                            {
-                                one = "0";
-                                if (logs == true)
-                                {
-                                    string text = File.ReadAllText(logf);
-                                    text += "Not found variable " + one + "|";
-                                    File.WriteAllText(logf, text);
-                                }
-                            }
-                        }
-                        if (two.StartsWith("$"))
-                        {
-                            two = two.Remove(0, 1);
-                            bool ab;
-                            ab = false;
-                            for (int ch = 0; ch < vars.Count; ch++)
-                            {
-                                if (vars[ch].StartsWith(two + "="))
-                                {
-                                    string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                    two = txt2;
-                                    ab = true;
-                                    break;
-                                }
-                            }
-                            if (ab == false)
-                            {
-                                two = "0";
-                                if (logs == true)
-                                {
-                                    string text = File.ReadAllText(logf);
-                                    text += "Not found variable " + two + "|";
-                                    File.WriteAllText(logf, text);
-                                }
-                            }
-                        }
-                        try
-                        {
-                            double a = double.Parse(one); double b = double.Parse(two);
-                            double result = a - b;
-                            bool d = false;
-                            for (int ch = 0; ch < vars.Count; ch++)
-                            {
-                                if (vars[ch].StartsWith(varv + "="))
-                                {
-                                    vars[ch] = varv + "=" + result;
-                                    d = true;
-                                    break;
-                                }
-
-                            }
-                            if (!d)
-                            {
-                                vars.Add(varv + "=" + result);
-                            }
-                        }
-                        catch
-                        {
-                            if (logs == true)
-                            {
-                                string text = File.ReadAllText(logf);
-                                text += "Unkown error: " + ofas + " *Check variables, arguments|";
-                                File.WriteAllText(logf, text);
-                            }
-                        }
-                    }
-                    else if (l[i].StartsWith("Mathx "))
-                    {
-                        string ofas = l[i].Remove(0, 6);
-                        string one = ofas.Substring(0, ofas.IndexOf("*"));
-                        string tam = ofas.Remove(0, one.Length + 1);
-                        string two = tam.Substring(0, tam.IndexOf("="));
-                        string varv = ofas.Substring(ofas.IndexOf("=") + 1);
-                        if (one.StartsWith("$"))
-                        {
-                            one = one.Remove(0, 1);
-                            bool ab;
-                            ab = false;
-                            for (int ch = 0; ch < vars.Count; ch++)
-                            {
-                                if (vars[ch].StartsWith(one + "="))
-                                {
-                                    string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                    one = txt2;
-                                    ab = true;
-                                    break;
-                                }
-                            }
-                            if (ab == false)
-                            {
-                                one = "0";
-                                if (logs == true)
-                                {
-                                    string text = File.ReadAllText(logf);
-                                    text += "Not found variable " + one + "|";
-                                    File.WriteAllText(logf, text);
-                                }
-                            }
-                        }
-                        if (two.StartsWith("$"))
-                        {
-                            two = two.Remove(0, 1);
-                            bool ab;
-                            ab = false;
-                            for (int ch = 0; ch < vars.Count; ch++)
-                            {
-                                if (vars[ch].StartsWith(two + "="))
-                                {
-                                    string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                    two = txt2;
-                                    ab = true;
-                                    break;
-                                }
-                            }
-                            if (ab == false)
-                            {
-                                two = "0";
-                                if (logs == true)
-                                {
-                                    string text = File.ReadAllText(logf);
-                                    text += "Not found variable " + two + "|";
-                                    File.WriteAllText(logf, text);
-                                }
-                            }
-                        }
-                        try
-                        {
-                            double a = double.Parse(one); double b = double.Parse(two);
-                            double result = a * b;
-                            bool d = false;
-                            for (int ch = 0; ch < vars.Count; ch++)
-                            {
-                                if (vars[ch].StartsWith(varv + "="))
-                                {
-                                    vars[ch] = varv + "=" + result;
-                                    d = true;
-                                    break;
-                                }
-
-                            }
-                            if (!d)
-                            {
-                                vars.Add(varv + "=" + result);
-                            }
-                        }
-                        catch
-                        {
-                            if (logs == true)
-                            {
-                                string text = File.ReadAllText(logf);
-                                text += "Unkown error: " + ofas + " *Check variables, arguments|";
-                                File.WriteAllText(logf, text);
-                            }
-                        }
-                    }
-                    else if (l[i].StartsWith("Mathn "))
-                    {
-                        string ofas = l[i].Remove(0, 6);
-                        string one = ofas.Substring(0, ofas.IndexOf("/"));
-                        string tam = ofas.Remove(0, one.Length + 1);
-                        string two = tam.Substring(0, tam.IndexOf("="));
-                        string varv = ofas.Substring(ofas.IndexOf("=") + 1);
-                        if (one.StartsWith("$"))
-                        {
-                            one = one.Remove(0, 1);
-                            bool ab;
-                            ab = false;
-                            for (int ch = 0; ch < vars.Count; ch++)
-                            {
-                                if (vars[ch].StartsWith(one + "="))
-                                {
-                                    string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                    one = txt2;
-                                    ab = true;
-                                    break;
-                                }
-                            }
-                            if (ab == false)
-                            {
-                                one = "0";
-                                if (logs == true)
-                                {
-                                    string text = File.ReadAllText(logf);
-                                    text += "Not found variable " + one + "|";
-                                    File.WriteAllText(logf, text);
-                                }
-                            }
-                        }
-                        if (two.StartsWith("$"))
-                        {
-                            two = two.Remove(0, 1);
-                            bool ab;
-                            ab = false;
-                            for (int ch = 0; ch < vars.Count; ch++)
-                            {
-                                if (vars[ch].StartsWith(two + "="))
-                                {
-                                    string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                    two = txt2;
-                                    ab = true;
-                                    break;
-                                }
-                            }
-                            if (ab == false)
-                            {
-                                two = "0";
-                                if (logs == true)
-                                {
-                                    string text = File.ReadAllText(logf);
-                                    text += "Not found variable " + two + "|";
-                                    File.WriteAllText(logf, text);
-                                }
-                            }
-                        }
-                        try
-                        {
-                            double a = double.Parse(one); double b = double.Parse(two);
-                            double result = a / b;
-                            bool d = false;
-                            for (int ch = 0; ch < vars.Count; ch++)
-                            {
-                                if (vars[ch].StartsWith(varv + "="))
-                                {
-                                    vars[ch] = varv + "=" + result;
-                                    d = true;
-                                    break;
-                                }
-
-                            }
-                            if (!d)
-                            {
-                                vars.Add(varv + "=" + result);
-                            }
-                        }
-                        catch
-                        {
-                            if (logs == true)
-                            {
-                                string text = File.ReadAllText(logf);
-                                text += "Unkown error: " + ofas + " *Check variables, arguments|";
-                                File.WriteAllText(logf, text);
-                            }
-                        }
-                    }
-                    else if (l[i] == "Pause")
-                        Console.ReadKey(true);
-                    else if (l[i] == "Clear")
-                        Console.Clear();
-                    else if (l[i] == "Exit")
-                        Environment.Exit(0);
-                    else if (l[i].StartsWith("Set "))
-                    {
+                    } else if (l[i] == "Pause") Console.ReadKey(true);
+                    else if (l[i] == "Clear") Console.Clear();
+                    else if (l[i] == "Exit") Environment.Exit(0);
+                    else if (l[i].StartsWith("Set ")) {
                         string ofas5 = l[i];
                         ofas5 = ofas5.Remove(0, 4);
                         string varv = ofas5.Substring(0, ofas5.IndexOf("="));
-                        string txt1 = ofas5.Substring(ofas5.IndexOf("=") + 1);
-                        string ofas3 = txt1;
-                        string[] splitstring = { "&&&", "&^&" };
-                        string[] ofas2 = ofas3.Split(splitstring, StringSplitOptions.None);
-                        string result = "";
-                        for (int s = 0; s < ofas2.Length; s++)
-                        {
-                            string ofas = ofas2[s];
-                            if (ofas.StartsWith("$"))
-                            {
-                                ofas = ofas.Remove(0, 1);
-                                bool ab = false;
-                                for (int ch = 0; ch < vars.Count; ch++)
-                                {
-                                    if (vars[ch].StartsWith(ofas + "="))
-                                    {
-                                        string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                        result += txt2;
-                                        ab = true;
-                                        break;
-                                    }
-                                }
-                                if (ab == false)
-                                {
-                                    result += "null";
-                                    if (logs == true)
-                                    {
-                                        string text = File.ReadAllText(logf);
-                                        text += "Not found variable " + ofas + "|";
-                                        File.WriteAllText(logf, text);
-                                    }
-                                }
-                            }
-                            else if (ofas.StartsWith("/$"))
-                            {
-                                string tit = ofas.Remove(0, 1);
-                                result += tit;
-                            }
-                            else
-                            {
-                                result += ofas;
-                            }
-                        }
-                        txt1 = result;
-                        Console.Write(txt1);
+                        Console.Write(ConvertS(ofas5.Substring(ofas5.IndexOf("=") + 1)));
                         string va = Console.ReadLine();
-                        bool d = false;
-                        for (int ch = 0; ch < vars.Count; ch++)
-                        {
-                            if (vars[ch].StartsWith(varv + "="))
-                            {
-                                vars[ch] = varv + "=" + va;
-                                d = true;
-                                break;
-                            }
-
-                        }
-                        if (!d)
-                        {
-                            vars.Add(varv + "=" + va);
-                        }
+                        if (vars.ContainsKey(varv)) vars[varv] = va;
+                        else vars.Add(varv, va);
                     }
-                    else if (l[i].StartsWith("If "))
-                    {
-                        string ofas = l[i];
-                        ofas = ofas.Remove(0, 3);
-                        bool ab;
-                        ab = false;
-                        string def = l[i].Remove(0, 3);
+                    else if (l[i].StartsWith("If ")) {
+                        
+                        string def = l[i].Remove(0, 2);
+
                         string var = def.Substring(0, def.IndexOf("="));
                         string j = def.Remove(0, var.Length + 1);
-                        string text = j.Substring(0, j.IndexOf(" "));
-                        string ofas3 = text;
-                        string[] splitstring = { "&&&", "&^&" };
-                        string[] ofas2 = ofas3.Split(splitstring, StringSplitOptions.None);
-                        string result = "";
-                        for (int s = 0; s < ofas2.Length; s++)
-                        {
-                            string ofas5 = ofas2[s];
-                            if (ofas5.StartsWith("$"))
-                            {
-                                ofas5 = ofas5.Remove(0, 1);
-                                bool abs = false;
-                                for (int ch = 0; ch < vars.Count; ch++)
-                                {
-                                    if (vars[ch].StartsWith(ofas5 + "="))
-                                    {
-                                        string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                        result += txt2;
-                                        abs = true;
-                                        break;
-                                    }
-                                }
-                                if (abs == false)
-                                {
-                                    result += "null";
-                                    if (logs == true)
-                                    {
-                                        string texts = File.ReadAllText(logf);
-                                        texts += "Not found variable " + ofas5 + "|";
-                                        File.WriteAllText(logf, text);
-                                    }
-                                }
-                            }
-                            else if (ofas.StartsWith("/$"))
-                            {
-                                string tit = ofas5.Remove(0, 1);
-                                result += tit;
-                            }
-                            else
-                            {
-                                result += ofas5;
-                            }
-                        }
-                        text = result;
+                        string text = ConvertS(j.Substring(0, j.IndexOf(" ")));
                         string func = "Function " + def.Substring(def.IndexOf(" ") + 1);
                         string func1 = "function " + def.Substring(def.IndexOf(" ") + 1);
-                        string ma;
-                        ma = "";
-                        for (int ch = 0; ch < vars.Count; ch++)
-                        {
-                            if (vars[ch].StartsWith(var + "="))
-                            {
-                                string txt2 = vars[ch].Substring(vars[ch].IndexOf("=") + 1);
-                                ma = txt2;
-                                ab = true;
-                                break;
-                            }
-                        }
-                        if (ab == false)
-                            ma = "null";
+                        string ma = "null";
+                        if (vars.ContainsKey(var)) ma = vars[var];
                         //Console.WriteLine(var + "|" + j + "|" + text + "|" + func + "|" + ma);
                         bool nc = false;
-                        if (ma == text)
-                        {
-                            for (int abg = 0; abg < l.Length; abg++)
-                            {
-                                if (l[abg] == func || l[abg] == func1)
-                                {
+                        if (ma == text)  {
+                            for (int abg = 0; abg < l.Length; abg++) {
+                                if (l[abg] == func || l[abg] == func1) {
                                     nc = true;
                                     i = abg;
                                     break;
                                 }
                             }
-                            if (nc == false)
-                            {
-                                if (logs == true)
-                                {
-                                    string textx = File.ReadAllText(logf);
-                                    textx += "Not found function " + func + "|";
-                                    File.WriteAllText(logf, textx);
+                            if (nc == false) {
+                                if (logs == true) {
+                                    string textx = "Not found function " + func + "\n";
+                                    File.AppendAllText(logf, textx);
                                 }
                             }
                         }
