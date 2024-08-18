@@ -75,8 +75,8 @@ namespace rescript {
                             Console.WriteLine("Not found file " + s);
                         }
                         break;
-                    } else if (s == "version") {
-                        Console.WriteLine("AuScript 3.0r by ix4Software | ReScript by etar125");
+                    } else if (s == "version" || s == "ver") {
+                        Console.WriteLine("AuScript 3.0r by ix4Software | ReScript 1.00 by etar125");
                         Console.ReadKey();
                         Environment.Exit(0);
                     } else {
@@ -167,18 +167,14 @@ namespace rescript {
             } return src;
         }
         public static string ConvertV(string src) {
-            if (src.StartsWith("$")) {
-                string ofas = src.Remove(0, 1);
-                if (vars.ContainsKey(ofas)) return vars[ofas];
-                else {
-                    if (logs == true) {
-                        string text = "Not found variable " + ofas + "\n";
-                        File.AppendAllText(logf, text);
-                    }
-                    return "-0";
+            if (vars.ContainsKey(src)) return vars[src];
+            else {
+                if (logs == true) {
+                    string text = "Not found variable " + src + "\n";
+                    File.AppendAllText(logf, text);
                 }
+                return "null";
             }
-            return src;
         }
 
         public static void oth(int stat)
@@ -1001,25 +997,15 @@ namespace rescript {
                         string ofas3 = l[i].Remove(0, 8);
                         string sym = ConvertS(ofas3.Substring(0, ofas3.IndexOf(" ")));
                         string j = ofas3.Substring(ofas3.IndexOf(" ") + 1);
-                        string froma = ConvertN(j.Substring(0, j.IndexOf("=")));
+                        string froma = ConvertV(j.Substring(0, j.IndexOf("=")));
                         string to = j.Substring(j.IndexOf("=") + 1);
                         int va = froma.IndexOf(sym);
-                        bool d = false;
-                        for (int ch = 0; ch < vars.Count; ch++) {
-                            if (vars[ch].StartsWith(to + "=")) {
-                                vars[ch] = to + "=" + va;
-                                d = true;
-                                break;
-                            }
-                        }
-                        if (!d) {
-                            vars.Add(to + "=" + va);
-                        }
+                        if (vars.ContainsKey(to)) vars[to] = va.ToString();
+                        else vars.Add(to, va.ToString());
                     } else {
                         if (logs == true) {
-                            string texts = File.ReadAllText(logf);
-                            texts += "Wrong command on line " + i.ToString() + ", text: " + l[i] + " *or end of custom???|";
-                            File.WriteAllText(logf, texts);
+                            string texts = "Wrong command on line " + i.ToString() + ", text: " + l[i] + " *or end of custom???\n";
+                            File.AppendAllText(logf, texts);
                         }
                     }
                 }
@@ -1027,68 +1013,37 @@ namespace rescript {
                 {
                     if (logs == true)
                     {
-                        string texts = File.ReadAllText(logf);
-                        texts += "Wrong command on line " + i.ToString() + ", text: " + l[i] + " *or end of custom??? or any error|";
-                        File.WriteAllText(logf, texts);
+                        string texts = "Wrong command on line " + i.ToString() + ", text: " + l[i] + " *or end of custom??? or any error\n";
+                        File.AppendAllText(logf, texts);
                     }
                 }
             }
         }
 
-        public static double NextDouble(Random RandGenerator, double MinValue, double MaxValue)
-        {
+        public static double NextDouble(Random RandGenerator, double MinValue, double MaxValue) {
             return RandGenerator.NextDouble() * (MaxValue - MinValue) + MinValue;
         }
 
-        public static void MsgBoxClose(object sender, EventArgs e)
-        {
+        public static void MsgBoxClose(object sender, EventArgs e) {
             msgbox.Close();
         }
-        public static void InBoxClose(object sender, EventArgs e)
-        {
+        public static void InBoxClose(object sender, EventArgs e) {
             string va = tb.Text;
-            bool d = false;
-            for (int ch = 0; ch < vars.Count; ch++)
-            {
-                if (vars[ch].StartsWith(invar + "="))
-                {
-                    vars[ch] = invar + "=" + va;
-                    d = true;
-                    break;
-                }
-            }
-            if (!d)
-            {
-                vars.Add(invar + "=" + va);
-            }
+            if (vars.ContainsKey(invar)) vars[invar] = va;
+            else vars.Add(invar, va);
             invar = "";
             inbox.Close();
         }
-        public static void ChBoxClose(object sender, EventArgs e)
-        {
-            try
-            {
+        public static void ChBoxClose(object sender, EventArgs e) {
+            try {
                 string va = lb.SelectedItem.ToString();
-                bool d = false;
-                for (int ch = 0; ch < vars.Count; ch++)
-                {
-                    if (vars[ch].StartsWith(chvar + "="))
-                    {
-                        vars[ch] = chvar + "=" + va;
-                        d = true;
-                        break;
-                    }
-                }
-                if (!d)
-                {
-                    vars.Add(chvar + "=" + va);
-                }
+                if (vars.ContainsKey(chvar)) vars[chvar] = va;
+                else vars.Add(chvar, va);
                 chvar = "";
                 chbox.Close();
-            }
-            catch
-            {
-
+            } catch {
+                string texts = "ChooseBox error: no item selected maybe\n";
+                File.AppendAllText(logf, texts);
             }
         }
     }
