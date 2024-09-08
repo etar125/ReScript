@@ -17,6 +17,7 @@ using System.Drawing;
 
 namespace rescript {
     public class Program {
+        #region Variables
         public static string path = "index.aus";
         public static Dictionary<string, string> vars;
         public static bool logs;
@@ -45,6 +46,17 @@ namespace rescript {
             INTERNET_CONNECTION_PROXY = 0x04,
             INTERNET_RAS_INSTALLED = 0x10
         }
+        #endregion
+        public static List<string> l = new List<string> { };
+        public static List<string> FileToList(string file) {
+            if (!File.Exists(file)) throw new FileNotFoundException("Not found file " + file);
+            List<string> r = new List<string> { };
+            foreach (string a in File.ReadAllLines(file)) r.Add(a);
+            return r;
+        } public static char[] TrimChars = { ' ', '\t' };
+
+        public static string version = "ReScript 1.06 by etar125";
+
         public static void Main(string[] args) {
             // Основные переменные
             vars = new Dictionary<string, string> {
@@ -55,7 +67,7 @@ namespace rescript {
                 { "time2", DateTime.Now.ToString("HH:mm") },
                 { "date1", DateTime.Now.ToString("dd MMMM yyyy") },
                 { "date2", DateTime.Now.ToString("dd.MM.yyyy") },
-                { "auver", "3.0r" },
+                { "auver", "1.06" },
                 { "machinename", Environment.MachineName },
                 { "username", Environment.UserName },
                 { "osver", Environment.OSVersion.VersionString }
@@ -76,7 +88,7 @@ namespace rescript {
                         }
                         break;
                     } else if (s == "version" || s == "ver") {
-                        Console.WriteLine("AuScript 3.0r by ix4Software | ReScript 1.00 by etar125");
+                        Console.WriteLine(version);
                         Console.ReadKey();
                         Environment.Exit(0);
                     } else {
@@ -109,8 +121,8 @@ namespace rescript {
                             new IntPtr(HWND_TOPMOST),
                             0, 0, 0, 0,
                             SWP_NOMOVE | SWP_NOSIZE);
-                    }*/
-                    //EnsureAssociationsSet()
+                    }
+                    EnsureAssociationsSet()*/
                 }
             }
             if (!File.Exists(path)) {
@@ -123,15 +135,41 @@ namespace rescript {
             logs = false;
             logf = "logs.txt";
 
+            l = FileToList(path);
+            //List<string> temp = new List<string> { };
+
+            /*bool no_task = true;
+            do {
+                no_task = true;
+                for(int i = 0; i < l.Count; ++i) {
+                    string s = l[i].TrimStart(TrimChars);
+                    if (s.ToLower().StartsWith("include ")) {
+                        s = l[i].Remove(0, 8);
+                        l.RemoveAt(i);
+                        if (!File.Exists(s + ".aus")) {
+                            Console.WriteLine("Not found file " + s + ".aus");
+                            Environment.Exit(0);
+                        } 
+                        temp = FileToList(s + ".aus");
+                        temp.AddRange(l);
+                        l = temp;
+                        no_task = false;
+
+                    }
+                }
+            } while (!no_task);*/
+
+
             // Вызываем основной метод
             oth(0);
         }
 
-        //Version: 0.3.2 (10.07.2022 16:21)
-        //Version: 0.3.5 (14.07.2022 21:02)
-        //Version: 0.3.7 (16.07.2022 20:49)
-        //Version: 0.4.1 (23.07.2022 19:33)
+        /*Version: 0.3.2 (10.07.2022 16:21)
+          Version: 0.3.5 (14.07.2022 21:02)
+          Version: 0.3.7 (16.07.2022 20:49)
+          Version: 0.4.1 (23.07.2022 19:33)*/
 
+        #region VF
         public static string ConvertS(string src) {
             string[] ofas2 = src.Split(new string[] { "&&&", "&^&" }, StringSplitOptions.None);
             string result = "";
@@ -176,14 +214,15 @@ namespace rescript {
                 return "null";
             }
         }
-
+        #endregion
+        
         public static void oth(int stat)
         {
-            string[] l = File.ReadAllLines(path);
-            for (int i = stat; i < l.Length; i++) {
+            for (int i = stat; i < l.Count; i++) {
+                l[i] = l[i].TrimStart(TrimChars);
                 try {
-                    if (l[i].Substring(0, 1) != "_") l[i] = l[i].Substring(0, 1).ToUpper() + l[i].Substring(1);
-                    else l[i] = l[i].Substring(1, 1).ToUpper() + l[i].Substring(2);
+                    if (l[i][0] != '_') l[i] = l[i].Substring(0, 1).ToUpper() + l[i].Substring(1);
+                    else l[i] = "_" + l[i].Substring(1, 1).ToUpper() + l[i].Substring(2);
                     if (l[i].StartsWith("Printline ")) Console.WriteLine(ConvertS(l[i].Remove(0, 10)));
                     else if (l[i].StartsWith("Print ")) Console.Write(ConvertS(l[i].Remove(0, 6)));
                     else if (l[i].StartsWith("Caption ")) Console.Title = ConvertS(l[i].Remove(0, 8));
@@ -197,7 +236,7 @@ namespace rescript {
                     } else if (l[i].StartsWith("Math")) {
                         string ofas = l[i].Remove(0, 4);
                         string op = ofas.Substring(0, 1);
-                        ofas = ofas.Remove(0, 1);
+                        ofas = ofas.Remove(0, 2);
                         string one = ofas.Substring(0, ofas.IndexOf(" "));
                         string tam = ofas.Remove(0, one.Length + 1);
                         string two = tam.Substring(0, tam.IndexOf("="));
@@ -231,7 +270,7 @@ namespace rescript {
                         string va = Console.ReadLine();
                         if (vars.ContainsKey(varv)) vars[varv] = va;
                         else vars.Add(varv, va);
-                    } else if (l[i].StartsWith("If ")) {
+                    } else if (l[i].StartsWith("If")) {
                         /* e ==
                          * n !=
                          * c Contains
@@ -280,7 +319,7 @@ namespace rescript {
                             }
                         }
                         if (yes) {
-                            for (int abg = 0; abg < l.Length; abg++) {
+                            for (int abg = 0; abg < l.Count; abg++) {
                                 if (l[abg] == func || l[abg] == func1) {
                                     nc = true;
                                     i = abg;
@@ -296,7 +335,7 @@ namespace rescript {
                     } else if (l[i].StartsWith("To ")) {
                         string def = l[i].Remove(0, 3);
                         bool nc = false;
-                        for (int abg = 0; abg < l.Length; abg++) {
+                        for (int abg = 0; abg < l.Count; abg++) {
                             if (l[abg] == "Function " + def || l[abg] == "function " + def) {
                                 //CheckStackTrace();
                                 nc = true;
@@ -627,7 +666,7 @@ namespace rescript {
                         if (vars.ContainsKey(varv)) vars[varv] = len.ToString();
                         else vars.Add(varv, len.ToString());
                     } else if (l[i].StartsWith("Longlength ")) {
-                        string ofas = l[i].Remove(0, 7);
+                        string ofas = l[i].Remove(0, 11);
                         string varv = ofas.Substring(0, ofas.IndexOf(" "));
                         string txt1 = ofas.Substring(ofas.IndexOf(" ") + 1);
                         int len = -1;
@@ -646,9 +685,9 @@ namespace rescript {
                                 File.AppendAllText(logf, text);
                             }
                         }
-                        if (vars.ContainsKey(varv)) vars[varv] = len.ToString();
-                        else vars.Add(varv, len.ToString());
-                    } else if (l[i].StartsWith("_Code ") && ConvertS(l[i].Remove(0, 6)) == "ver") Console.WriteLine("AuScript 3.0r by ix4Software | ReScript by etar125");
+                        if (vars.ContainsKey(txt1)) vars[txt1] = len.ToString();
+                        else vars.Add(txt1, len.ToString());
+                    } else if (l[i].StartsWith("_Code ") && ConvertS(l[i].Remove(0, 6)) == "ver") Console.WriteLine(version);
                     else if (l[i].StartsWith("Process ")) {
                         string ofas3 = l[i].Remove(0, 8);
                         string varv = ofas3.Substring(0, ofas3.IndexOf(" "));
